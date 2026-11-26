@@ -3,87 +3,682 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Для заявок//Фитаревская 15к2</title>
+<title>Домовой журнал — Фитаревская 15к2</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#2a2420;color:#fff;min-height:100vh;padding:16px}
-.page-title{font-size:clamp(20px,5vw,28px);font-weight:700;margin-bottom:20px;text-align:center;padding:0 10px}
-.card{max-width:600px;margin:0 auto;background:#1e1a16;border-radius:16px;padding:30px 25px}
-.card-desc{font-size:15px;line-height:1.5;margin-bottom:25px;color:#e0dcd8}
-.form-group{margin-bottom:22px}
-.form-label{display:block;font-size:15px;font-weight:600;margin-bottom:10px;color:#fff}
-.form-label .req{color:#ff6b6b}
-select{width:100%;padding:12px 14px;background:#3a3530;border:1px solid #4a4540;border-radius:8px;color:#fff;font-size:16px;outline:none;-webkit-appearance:none;appearance:none}
-select:focus{border-color:#ff9800}
-select option{background:#3a3530;color:#fff}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#2a2420;color:#fff;min-height:100vh;padding:16px;line-height:1.5}
+.container{max-width:640px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header h1{font-size:clamp(22px,5vw,28px);font-weight:700;margin-bottom:8px}
+.header p{font-size:14px;color:#b0a8a0;line-height:1.5}
+.emergency-banner{background:#c0392b;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;font-weight:600;font-size:14px}
+.emergency-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.emergency-btn{background:#3a2020;border:2px solid #c0392b;color:#fff;padding:14px 8px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center}
+.emergency-btn:active{background:#c0392b}
+.emergency-call{display:none;background:#c0392b;border-radius:10px;padding:20px;text-align:center;margin-bottom:16px}
+.emergency-call.show{display:block}
+.emergency-call a{color:#fff;font-size:28px;font-weight:700;text-decoration:none;display:block;margin-top:8px}
+.card{background:#1e1a16;border-radius:16px;padding:24px 20px;margin-bottom:16px}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#e0dcd8}
+.form-label .req{color:#ff6b6b;margin-left:2px}
+.form-label .opt{color:#888;font-weight:400;font-size:12px;margin-left:4px}
+select,input[type="text"],input[type="number"],input[type="date"],textarea{width:100%;padding:12px 14px;background:#2a2420;border:1px solid #4a4540;border-radius:8px;color:#fff;font-size:16px;outline:none;-webkit-appearance:none;appearance:none;font-family:inherit}
+select:focus,input:focus,textarea:focus{border-color:#ff9800}
+select option{background:#2a2420;color:#fff}
+input.error,select.error{border-color:#ff6b6b;background:#3a2020}
+.error-msg{color:#ff6b6b;font-size:12px;margin-top:4px;display:none}
+.error-msg.show{display:block}
 .radio-group{display:flex;flex-direction:column;gap:8px}
-.radio-option{display:flex;align-items:center;padding:14px 16px;background:#2a2420;border:1px solid #5a5550;border-radius:10px;cursor:pointer;transition:all .15s;font-size:15px;min-height:48px}
+.radio-option{display:flex;align-items:center;padding:14px 16px;background:#2a2420;border:1px solid #4a4540;border-radius:10px;cursor:pointer;font-size:14px;min-height:48px;transition:all .15s}
 .radio-option:active{background:#3a3028}
 .radio-option input{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:2px solid #888;border-radius:50%;margin-right:12px;position:relative;flex-shrink:0;cursor:pointer}
 .radio-option input:checked{border-color:#ff9800}
 .radio-option input:checked::after{content:'';position:absolute;top:3px;left:3px;width:10px;height:10px;background:#ff9800;border-radius:50%}
-.submit-btn{width:100%;padding:16px;background:#ff9800;color:#1a1410;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px;transition:background .15s;min-height:52px}
-.submit-btn:active{background:#e68a00}
-@media(max-width:480px){body{padding:10px}.card{padding:22px 16px;border-radius:14px}.card-desc{font-size:14px;margin-bottom:20px}.form-group{margin-bottom:18px}.radio-option{padding:12px 14px;font-size:14px}}
+.radio-option.error{border-color:#ff6b6b}
+.warning-box{background:#3a2a10;border-left:4px solid #ff9800;padding:12px 14px;border-radius:8px;margin-bottom:18px;font-size:14px;display:none}
+.warning-box.show{display:block}
+.warning-box a{color:#ff9800;font-weight:600;text-decoration:none}
+.btn{width:100%;padding:16px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;min-height:52px}
+.btn-primary{background:#ff9800;color:#1a1410}
+.btn-primary:active{background:#e68a00}
+.btn-primary:disabled{background:#555;color:#888;cursor:not-allowed}
+.btn-secondary{background:#4caf50;color:#fff;margin-top:10px}
+.btn-secondary:active{background:#3d8b40}
+.btn-back{background:#ff9800;color:#1a1410;margin-top:10px}
+.hidden{display:none !important}
+.result-card{background:#1e1a16;border-radius:16px;padding:24px 20px}
+.result-header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #4a4540}
+.result-header h2{font-size:18px;margin-bottom:12px;color:#ff9800}
+.result-meta{font-size:13px;color:#b0a8a0;line-height:1.7}
+.result-meta b{color:#fff}
+.emergency-tag{display:inline-block;background:#c0392b;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-left:8px}
+.text-box{background:#2a2420;border:2px solid #4a4540;border-radius:10px;padding:16px;font-size:14px;line-height:1.6;white-space:pre-wrap;margin:16px 0;color:#f0ece8;word-wrap:break-word}
+.status-msg{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;display:none}
+.status-msg.ok{display:block;background:#1b3a1b;color:#8f8}
+.status-msg.err{display:block;background:#3a1b1b;color:#f88}
+.footer{margin-top:20px;padding:16px;text-align:center;font-size:12px;color:#888;line-height:1.6}
+.footer a{color:#ff9800;text-decoration:none}
+.copyright{margin-top:10px;font-size:11px;color:#666}
+.btn-row{display:flex;gap:10px;margin-top:10px}
+.btn-row .btn{flex:1 1 0;min-width:0}
+@media(max-width:480px){
+  body{padding:10px}
+  .card,.result-card{padding:18px 14px;border-radius:14px}
+  .emergency-buttons{grid-template-columns:1fr}
+  .btn-row{flex-direction:column}
+}
 </style>
 </head>
 <body>
+<div class="container">
 
-<h1 class="page-title">Для заявок//Фитаревская 15к2</h1>
-
-<div class="card">
-  <p class="card-desc">Данная форма предназначена для формирования текста и сбора данных по проблемам дома Фитаревская 15к2</p>
-
-  <div class="form-group">
-    <label class="form-label"><span class="req">*</span> Укажите № квартиры</label>
-    <select id="apartment" required>
-      <option value="">— выберите —</option>
-    </select>
+<!-- ==================== ЭКРАН 1: ФОРМА ==================== -->
+<div id="formScreen">
+  <div class="header">
+    <h1>🏠 Домовой журнал</h1>
+    <p>Заявки и обращения — Фитаревская 15к2</p>
+    <p style="margin-top:8px;font-size:12px;color:#888">Выберите проблему и получателя — получите готовый текст обращения. Сервис <b>не отправляет</b> заявки сам: вы копируете текст и отправляете его через официальные ресурсы ПОРТАЛ МОСКВЫ (MOS.RU), ГИС ЖКХ, почту.</p>
   </div>
 
-  <div class="form-group">
-    <label class="form-label">Какая у вас проблема?</label>
-    <div class="radio-group">
-      <label class="radio-option"><input type="radio" name="problem" value="gvs"> Протечка ГВС</label>
-      <label class="radio-option"><input type="radio" name="problem" value="hvs"> Протечка ХВС</label>
-      <label class="radio-option"><input type="radio" name="problem" value="heating"> Проблема с отоплением</label>
-      <label class="radio-option"><input type="radio" name="problem" value="garbage"> Забит мусоропровод</label>
-      <label class="radio-option"><input type="radio" name="problem" value="cleaning"> Не проводилась уборка на этаже</label>
+  <div class="emergency-banner">
+    ⚠️ При пожаре, задымлении, трещине или обрушении несущих конструкций — <b>НЕ заполняйте форму</b>. Звоните 112.
+  </div>
+  <div class="emergency-buttons">
+    <button class="emergency-btn" onclick="showEmergency()">🔥 Пожар</button>
+    <button class="emergency-btn" onclick="showEmergency()">🏚 Обрушение</button>
+  </div>
+  <div class="emergency-call" id="emergencyCall">
+    <div>Звоните прямо сейчас:</div>
+    <a href="tel:112">📞 112</a>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label"><span class="req">*</span> Категория проблемы</label>
+      <select id="category"><option value="">— выберите категорию —</option></select>
+      <div class="error-msg" id="errCategory">Выберите категорию</div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <label class="form-label">Куда планируется отправка</label>
-    <div class="radio-group">
-      <label class="radio-option"><input type="radio" name="recipient" value="uk"> ГБУ «Жилищник района Коммунарка»</label>
-      <label class="radio-option"><input type="radio" name="recipient" value="gzhi"> Государственная жилищная инспекция города Москвы</label>
-      <label class="radio-option"><input type="radio" name="recipient" value="uprava"> Управа района Коммунарка города Москвы</label>
+    <div class="form-group">
+      <label class="form-label"><span class="req">*</span> Проблема</label>
+      <select id="problem" disabled><option value="">— сначала выберите категорию —</option></select>
+      <div class="error-msg" id="errProblem">Выберите проблему</div>
     </div>
+
+    <div class="form-group">
+      <label class="form-label"><span class="req">*</span> Куда планируется отправка</label>
+      <div class="radio-group" id="recipientGroup">
+        <label class="radio-option"><input type="radio" name="recipient" value="uk"> ГБУ «Жилищник района Коммунарка»</label>
+        <label class="radio-option"><input type="radio" name="recipient" value="gzhi"> Государственная жилищная инспекция города Москвы (ГЖИ)</label>
+        <label class="radio-option"><input type="radio" name="recipient" value="uprava"> Управа района Коммунарка города Москвы</label>
+      </div>
+      <div class="error-msg" id="errRecipient">Выберите адресата</div>
+    </div>
+
+    <div id="complaintFields" class="hidden">
+      <div class="form-group">
+        <label class="form-label"><span class="req">*</span> Дата обращения в УК</label>
+        <input type="date" id="ukDate">
+        <div class="error-msg" id="errUkDate">Укажите дату обращения в УК</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="req">*</span> Номер заявки в УК</label>
+        <input type="text" id="ukNumber" placeholder="Например: 12345678 или Н-2026-001">
+        <div class="error-msg" id="errUkNumber">Укажите номер заявки в УК</div>
+      </div>
+    </div>
+
+    <div class="warning-box" id="emergencyWarning">
+      ⚠️ Сначала позвоните в Аварийную службу УК: <a href="tel:+74955395353">+7 (495) 539-53-53</a>. Заявка через форму — дополнительно, для фиксации инцидента.
+    </div>
+
+    <!-- Поля места: квартира и этаж (подъезд зашит автоматически) -->
+    <div id="locationFields" class="hidden">
+      <div class="form-group" id="fieldFlat">
+        <label class="form-label" id="labelFlat">№ квартиры <span class="opt">(1–168)</span></label>
+        <input type="number" id="flat" min="1" max="168" placeholder="Например: 42">
+        <div class="error-msg" id="errFlat">Введите номер квартиры от 1 до 168</div>
+      </div>
+      <div class="form-group" id="fieldFloor">
+        <label class="form-label" id="labelFloor">Этаж <span class="opt">(1–17)</span></label>
+        <input type="number" id="floor" min="1" max="17" placeholder="Например: 7">
+        <div class="error-msg" id="errFloor">Введите номер этажа от 1 до 17</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Детали <span class="opt">(необязательно — уточнит проблему в тексте)</span></label>
+      <textarea id="details" rows="3" placeholder="Например: течь с утра, вода течёт по стене, в квартире ребёнок..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="submitBtn" onclick="generateText()" disabled>Сформировать текст</button>
+  </div>
+</div>
+
+<!-- ==================== ЭКРАН 2: РЕЗУЛЬТАТ ==================== -->
+<div id="resultScreen" class="hidden">
+  <div class="header">
+    <h1>Текст заявки</h1>
   </div>
 
-  <button class="submit-btn" onclick="goToResult()">СФОРМИРОВАТЬ</button>
+  <div class="result-card">
+    <div class="result-header">
+      <h2>📋 Текст ваше заявки готов <span id="emergencyTag" class="emergency-tag hidden">СРОЧНО</span></h2>
+      <div class="result-meta" id="resultMeta"></div>
+    </div>
+
+    <div class="text-box" id="generatedText"></div>
+
+    <button class="btn btn-secondary" id="copyBtn" onclick="copyText()">📋 Копировать текст</button>
+
+    <hr style="border:none;border-top:1px solid #4a4540;margin:20px 0">
+
+    <p style="font-size:13px;color:#b0a8a0;margin-bottom:12px">
+      📝 После отправки текста в УК/ГЖИ/Управу — введите номер заявки и нажмите «Отправить в таблицу», чтобы сохранить данные для совета дома:
+    </p>
+    <div class="form-group">
+      <input type="text" id="requestNumber" placeholder="Например: 12345678 или Н-2026-001">
+    </div>
+    <button class="btn btn-primary" id="sendBtn" onclick="sendToSheet()" disabled>📤 Отправить в таблицу</button>
+    <div class="status-msg" id="statusMsg"></div>
+
+    <button class="btn btn-back" onclick="goBack()">← Назад (редактировать)</button>
+  </div>
+
+  <div class="footer">
+    <p>Сервис — инициатива жителей дома Фитаревская 15к2. Не является официальным Порталом Москвы (MOS.RU) или ГИС ЖКХ.</p>
+    <p style="margin-top:6px">Обращение отправляет сам жилец. Сервис лишь помогает составить текст и собрать статистику инцидентов для совета дома.</p>
+    <p style="margin-top:6px;color:#ff6b6b">При пожаре или угрозе обрушения — звоните <a href="tel:112">112</a>.</p>
+    <p class="copyright">© 2026 CYV. Все права защищены.</p>
+  </div>
+</div>
+
 </div>
 
 <script>
-const sel = document.getElementById('apartment');
-for(let i=1;i<=167;i++){
-  const o=document.createElement('option');
-  o.value=i;o.textContent=i;
-  sel.appendChild(o);
+// =====================================================================
+// КОНФИГ — всё настраивается здесь
+// =====================================================================
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWMqS_VJaYDn0ifE5xR7vkiABRME23Z86cRmNWcP0JuKUU1aJFydCuR-mniUYkZFzPdQ/exec';
+
+const UK_NAME = 'ГБУ «Жилищник района Коммунарка»';
+const UK_PHONE = '+7 (495) 539-53-53';
+const UK_PHONE_HREF = '+74955395353';
+const ADDRESS = 'г. Москва, ул. Фитаревская, д. 15, корп. 2';
+const TOTAL_FLOORS = 17;
+const TOTAL_FLATS = 168;
+const DEFAULT_ENTRANCE = 'Подъезд 1'; // Подъезд зашит — в доме только один
+
+const RECIPIENT_NAMES = {
+  uk: 'ГБУ «Жилищник района Коммунарка»',
+  gzhi: 'Государственная жилищная инспекция г. Москвы (ГЖИ)',
+  uprava: 'Управа района Коммунарка г. Москвы'
+};
+
+// Флаги:
+//   needFlat / needFloor — показывать поля квартиры/этажа
+//   isBuildingWide — общедомовая проблема (не нужны квартира и этаж)
+//   isEntrance — проблема в подъезде/МОП (нужен этаж, подъезд зашит)
+//   isTerritory — проблема на придомовой территории (без полей места)
+//   emergency — аварийная проблема (особый шаблон + метка СРОЧНО + предупреждение)
+
+const CATEGORIES = {
+  water: {
+    name: '💧 Вода и канализация',
+    problems: [
+      {id:'gvs_leak', name:'Протечка ГВС (труба, кран, стояк)', needFlat:true, needFloor:true, emergency:false},
+      {id:'hvs_leak', name:'Протечка ХВС (труба, кран, стояк)', needFlat:true, needFloor:true, emergency:false},
+      {id:'pipe_burst', name:'Прорыв трубы ГВС/ХВС (фонтан, сильная течь)', isBuildingWide:true, emergency:true},
+      {id:'no_gvs', name:'Отсутствие ГВС (нет горячей воды)', isBuildingWide:true, emergency:true},
+      {id:'no_hvs', name:'Отсутствие ХВС (нет холодной воды)', isBuildingWide:true, emergency:true},
+      {id:'sewage_block', name:'Засор канализации (стояк, обратный поток)', needFlat:true, needFloor:true, emergency:true},
+      {id:'towel_rail', name:'Протечка полотенцесушителя', needFlat:true, needFloor:true, emergency:false}
+    ]
+  },
+  heating: {
+    name: '🔥 Отопление',
+    problems: [
+      {id:'no_heat', name:'Отсутствие отопления (стояк холодный)', isBuildingWide:true, emergency:true},
+      {id:'weak_heat', name:'Недостаточный нагрев радиаторов (слабое отопление)', needFlat:true, needFloor:true, emergency:false},
+      {id:'heating_leak', name:'Протечка системы отопления (стояк, разводка, радиатор)', needFlat:true, needFloor:true, emergency:true},
+      {id:'heat_noise', name:'Посторонний шум/гудение в трубах отопления', needFlat:true, needFloor:true, emergency:false},
+      {id:'riser_air', name:'Завоздушивание стояка отопления', needFlat:true, needFloor:true, emergency:false}
+    ]
+  },
+  electricity: {
+    name: '⚡ Электричество',
+    problems: [
+      {id:'no_power_flat', name:'Нет электричества в квартире', needFlat:true, needFloor:true, emergency:true},
+      {id:'no_power_common', name:'Нет электричества в местах общего пользования', isEntrance:true, emergency:true},
+      {id:'panel_smoke', name:'Искрение / запах гари в электрощите', isEntrance:true, emergency:true},
+      {id:'entrance_light', name:'Не работает освещение в подъезде', isEntrance:true, emergency:false},
+      {id:'elevator', name:'Не работает лифт', isEntrance:true, emergency:true},
+      {id:'socket_common', name:'Неисправность розетки/освещения в МОП', isEntrance:true, emergency:false}
+    ]
+  },
+  structure: {
+    name: '🏗 Кровля, фасад, конструкции',
+    problems: [
+      {id:'roof_leak', name:'Протечка кровли (мокрые стены/потолок)', needFlat:true, needFloor:true, emergency:true},
+      {id:'crack', name:'Трещина несущей конструкции / обрушение', needFlat:true, needFloor:true, emergency:true},
+      {id:'facade_damage', name:'Повреждение фасада (отслоение, трещина, падение элементов)', isBuildingWide:true, emergency:true},
+      {id:'window_broken', name:'Разбитое окно в подъезде / МОП', isEntrance:true, needFloor:true, emergency:false},
+      {id:'balcony', name:'Проблема с балконом / лоджией (трещина, ограждение)', needFlat:true, needFloor:true, emergency:false},
+      {id:'mold', name:'Плесень / грибок на стенах', needFlat:true, needFloor:true, emergency:false}
+    ]
+  },
+  access: {
+    name: '🚪 Двери, замки, домофон',
+    problems: [
+      {id:'entrance_door', name:'Не закрывается входная дверь подъезда', isEntrance:true, emergency:false},
+      {id:'intercom', name:'Не работает домофон', isEntrance:true, emergency:false},
+      {id:'lock', name:'Неисправность замка / доводчика двери', isEntrance:true, emergency:false},
+      {id:'mailbox', name:'Поломка почтового ящика', needFlat:true, needFloor:true, emergency:false},
+      {id:'parking_gate', name:'Неисправность шлагбаума / ворот паркинга', isBuildingWide:true, emergency:false}
+    ]
+  },
+  cleaning: {
+    name: '🧹 Уборка и содержание',
+    problems: [
+      {id:'dirty_entrance', name:'Грязь в подъезде', isEntrance:true, needFloor:true, emergency:false},
+      {id:'dirty_common', name:'Грязь на лестничной площадке / лифте', isEntrance:true, needFloor:true, emergency:false},
+      {id:'garbage', name:'Переполнение контейнеров для мусора', isTerritory:true, emergency:false},
+      {id:'cockroaches', name:'Насекомые / грызуны в местах общего пользования', isEntrance:true, emergency:false},
+      {id:'snow', name:'Не убран снег / наледь (двор, вход, пандус)', isTerritory:true, emergency:false}
+    ]
+  },
+  territory: {
+    name: '🌳 Придомовая территория',
+    problems: [
+      {id:'playground', name:'Сломанное оборудование детской / спортивной площадки', isTerritory:true, emergency:false},
+      {id:'yard_light', name:'Не работает освещение двора', isTerritory:true, emergency:false},
+      {id:'pavement', name:'Повреждение тротуара / проезда / бордюра', isTerritory:true, emergency:false},
+      {id:'flood_yard', name:'Подтопление придомовой территории', isTerritory:true, emergency:true},
+      {id:'bench', name:'Поломка скамеек / МАФ', isTerritory:true, emergency:false}
+    ]
+  }
+  // Категории "Подземный паркинг" и "Другое" удалены по запросу
+};
+
+// =====================================================================
+// ИНИЦИАЛИЗАЦИЯ
+// =====================================================================
+
+let currentProblem = null;
+
+function initForm() {
+  const catSel = document.getElementById('category');
+  Object.keys(CATEGORIES).forEach(function(k){
+    const o = document.createElement('option');
+    o.value = k;
+    o.textContent = CATEGORIES[k].name;
+    catSel.appendChild(o);
+  });
+  // Поля квартиры и этажа всегда есть в DOM, просто скрываются/показываются
 }
 
-function goToResult(){
-  const apt=document.getElementById('apartment').value;
-  const prob=document.querySelector('input[name="problem"]:checked');
-  const rec=document.querySelector('input[name="recipient"]:checked');
+document.getElementById('category').addEventListener('change', function(){
+  const probSel = document.getElementById('problem');
+  const cat = this.value;
+  probSel.innerHTML = '';
+  currentProblem = null;
+  if (!cat) {
+    probSel.disabled = true;
+    probSel.appendChild(new Option('— сначала выберите категорию —',''));
+  } else {
+    probSel.disabled = false;
+    probSel.appendChild(new Option('— выберите проблему —',''));
+    CATEGORIES[cat].problems.forEach(function(p){
+      probSel.appendChild(new Option(p.name, p.id));
+    });
+  }
+  updateUI();
+});
 
-  if(!apt){alert('Укажите номер квартиры');return}
-  if(!prob){alert('Выберите проблему');return}
-  if(!rec){alert('Выберите адресата');return}
+document.getElementById('problem').addEventListener('change', function(){
+  const catKey = document.getElementById('category').value;
+  currentProblem = null;
+  if (catKey && this.value) {
+    currentProblem = CATEGORIES[catKey].problems.find(function(p){return p.id === this.value;}.bind({value:this.value}));
+  }
+  updateUI();
+});
 
-  const params=new URLSearchParams({apt,problem:prob.value,recipient:rec.value});
-  window.location.href='result.html?'+params.toString();
+['ukDate','ukNumber','flat','floor'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', function(){
+    this.classList.remove('error');
+    const err = document.getElementById('err' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (err) err.classList.remove('show');
+    validateForm();
+  });
+});
+
+document.querySelectorAll('input[name="recipient"]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.radio-option').forEach(function(o){o.classList.remove('error');});
+    document.getElementById('errRecipient').classList.remove('show');
+    updateUI();
+  });
+});
+
+function updateUI() {
+  const recipient = document.querySelector('input[name="recipient"]:checked');
+
+  // поля жалобы (ГЖИ / Управа)
+  const complaint = document.getElementById('complaintFields');
+  if (recipient && (recipient.value === 'gzhi' || recipient.value === 'uprava')) {
+    complaint.classList.remove('hidden');
+  } else {
+    complaint.classList.add('hidden');
+  }
+
+  // предупреждение аварийной службы
+  const warn = document.getElementById('emergencyWarning');
+  if (currentProblem && currentProblem.emergency) warn.classList.add('show');
+  else warn.classList.remove('show');
+
+  // поля места
+  const locBox = document.getElementById('locationFields');
+  const ff = document.getElementById('fieldFlat');
+  const fl = document.getElementById('fieldFloor');
+
+  if (!currentProblem) { locBox.classList.add('hidden'); validateForm(); return; }
+
+  // Определяем, какие поля показывать
+  const showFlat = currentProblem.needFlat === true;
+  const showFloor = currentProblem.needFloor === true || currentProblem.needFlat === true;
+
+  if (currentProblem.isBuildingWide || currentProblem.isTerritory) {
+    // Общедомовая или дворовая проблема — поля места не нужны
+    locBox.classList.add('hidden');
+  } else if (currentProblem.isEntrance) {
+    // Проблема в подъезде — нужен только этаж (подъезд зашит)
+    locBox.classList.remove('hidden');
+    ff.classList.add('hidden');
+    if (currentProblem.needFloor) fl.classList.remove('hidden');
+    else fl.classList.add('hidden');
+  } else {
+    // Квартирная проблема — нужны и квартира, и этаж
+    locBox.classList.remove('hidden');
+    if (showFlat) ff.classList.remove('hidden'); else ff.classList.add('hidden');
+    if (showFloor) fl.classList.remove('hidden'); else fl.classList.add('hidden');
+  }
+
+  validateForm();
 }
+
+function validateNumberField(id, min, max) {
+  const val = document.getElementById(id).value.trim();
+  if (!val) return false;
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < min || n > max) return false;
+  return true;
+}
+
+function validateForm() {
+  const cat = document.getElementById('category').value;
+  const prob = document.getElementById('problem').value;
+  const recipient = document.querySelector('input[name="recipient"]:checked');
+  const btn = document.getElementById('submitBtn');
+
+  if (!cat || !prob || !recipient) { btn.disabled = true; return; }
+
+  if (recipient.value === 'gzhi' || recipient.value === 'uprava') {
+    if (!document.getElementById('ukDate').value || !document.getElementById('ukNumber').value.trim()) {
+      btn.disabled = true; return;
+    }
+  }
+  if (currentProblem) {
+    if (currentProblem.needFlat && !validateNumberField('flat', 1, TOTAL_FLATS)) { btn.disabled = true; return; }
+    if (currentProblem.needFloor && !validateNumberField('floor', 1, TOTAL_FLOORS)) { btn.disabled = true; return; }
+  }
+  btn.disabled = false;
+}
+
+// =====================================================================
+// ФОРМАТ ДАТЫ (МСК)
+// =====================================================================
+
+function ruDate(d) {
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  return dd + '.' + mm + '.' + d.getFullYear();
+}
+function isoToRu(s) {
+  if (!s) return '—';
+  const p = s.split('-');
+  return p[2] + '.' + p[1] + '.' + p[0];
+}
+function mskNow() {
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
+}
+
+// =====================================================================
+// ФРАГМЕНТ МЕСТА (подъезд зашит как DEFAULT_ENTRANCE)
+// =====================================================================
+
+function buildLocation(flat, floor, probId) {
+  const isCleaning = probId === 'dirty_entrance' || probId === 'dirty_common';
+
+  if (currentProblem && currentProblem.isTerritory) return 'на придомовой территории';
+
+  if (flat && floor) return 'в квартире №' + flat + ', ' + floor + ' этаж, ' + DEFAULT_ENTRANCE;
+  if (flat) return 'в квартире №' + flat + ', ' + DEFAULT_ENTRANCE;
+
+  if (floor) {
+    if (isCleaning && parseInt(floor,10) <= 2) return 'в ' + DEFAULT_ENTRANCE + ', на 1–2 этажах';
+    return 'в ' + DEFAULT_ENTRANCE + ', на ' + floor + ' этаже';
+  }
+
+  // Только подъезд (без этажа) — для проблем типа "не закрывается дверь"
+  return 'в ' + DEFAULT_ENTRANCE;
+}
+
+// =====================================================================
+// ГЕНЕРАЦИЯ ТЕКСТА
+// =====================================================================
+
+function markError(elId, errId) {
+  const el = document.getElementById(elId);
+  if (el) el.classList.add('error');
+  const err = document.getElementById(errId);
+  if (err) err.classList.add('show');
+}
+
+function generateText() {
+  let valid = true;
+  const cat = document.getElementById('category').value;
+  const probId = document.getElementById('problem').value;
+  const recipient = document.querySelector('input[name="recipient"]:checked');
+
+  if (!cat) { markError('category','errCategory'); valid = false; }
+  if (!probId) { markError('problem','errProblem'); valid = false; }
+  if (!recipient) {
+    document.querySelectorAll('.radio-option').forEach(function(o){o.classList.add('error');});
+    document.getElementById('errRecipient').classList.add('show');
+    valid = false;
+  }
+  if (recipient && (recipient.value === 'gzhi' || recipient.value === 'uprava')) {
+    if (!document.getElementById('ukDate').value) { markError('ukDate','errUkDate'); valid = false; }
+    if (!document.getElementById('ukNumber').value.trim()) { markError('ukNumber','errUkNumber'); valid = false; }
+  }
+  if (currentProblem) {
+    if (currentProblem.needFlat && !validateNumberField('flat', 1, TOTAL_FLATS)) { markError('flat','errFlat'); valid = false; }
+    if (currentProblem.needFloor && !validateNumberField('floor', 1, TOTAL_FLOORS)) { markError('floor','errFloor'); valid = false; }
+  }
+  if (!valid) return;
+
+  const flat = document.getElementById('flat').value.trim();
+  const floor = document.getElementById('floor').value.trim();
+  const ukDate = document.getElementById('ukDate').value;
+  const ukNumber = document.getElementById('ukNumber').value.trim();
+  const details = document.getElementById('details').value.trim();
+  const today = ruDate(mskNow());
+  const name = currentProblem.name;
+  const loc = buildLocation(flat, floor, currentProblem ? currentProblem.id : '');
+  const detailsBlock = details ? '\n\nДополнительно: ' + details : '';
+
+  let text = '';
+
+  if (recipient.value === 'uk') {
+    if (currentProblem.emergency) {
+      text = 'СРОЧНО! Аварийная ситуация ' + loc + ' — ' + ADDRESS + '.'
+        + '\n\nПроблема: ' + name + '.'
+        + detailsBlock
+        + '\n\nПрошу незамедлительно направить аварийную бригаду: ситуация аварийная, есть риск затопления, повреждения имущества и угроза безопасности жильцов.'
+        + '\nПрошу по прибытии составить акт осмотра и зафиксировать время реагирования.'
+        + '\n\nКонтактное лицо для связи по телефону, указанному в заявке.'
+        + '\n\nДата обращения: ' + today;
+    } else {
+      text = 'Здравствуйте! В ' + ADDRESS + ' возникла проблема' + (loc ? ' ' + loc : '') + '.'
+        + '\n\nПроблема: ' + name + '.'
+        + detailsBlock
+        + '\n\nПрошу направить специалиста для осмотра и устранения проблемы в нормативный срок согласно Правилам содержания общего имущества и договору управления.'
+        + '\nПрошу сообщить номер заявки и планируемый срок устранения.'
+        + '\n\nДата обращения: ' + today;
+    }
+  } else {
+    const ukDateRu = isoToRu(ukDate);
+    text = 'Прошу провести проверку и принять меры в отношении бездействия ' + UK_NAME + '.'
+      + '\n\nВ ' + ADDRESS + (loc ? ' (' + loc + ')' : '') + ' имеет место проблема: ' + name + '.'
+      + detailsBlock
+      + '\n\n' + ukDateRu + ' в ' + UK_NAME + ' было направлено обращение № ' + ukNumber + '. На текущий момент нарушение не устранено, ответ по существу не получен.'
+      + (currentProblem.emergency ? '\n\nСитуация является аварийной, есть угроза безопасности жильцов и имуществу.' : '')
+      + '\n\nПрошу ' + (currentProblem.emergency ? 'немедленно ' : '') + 'провести проверку, выдать предписание об устранении нарушения и привлечь виновных к ответственности. Ответ прошу направить в установленный законом срок.'
+      + '\n\nДата обращения: ' + today;
+  }
+
+  document.getElementById('generatedText').textContent = text;
+
+  let meta = '<b>Проблема:</b> ' + name +
+    '<br><b>Адресат:</b> ' + RECIPIENT_NAMES[recipient.value] +
+    '<br><b>Подъезд:</b> ' + DEFAULT_ENTRANCE +
+    '<br><b>Дата:</b> ' + today;
+  if (flat) meta += '<br><b>Квартира:</b> №' + flat;
+  if (floor) meta += '<br><b>Этаж:</b> ' + floor;
+  document.getElementById('resultMeta').innerHTML = meta;
+
+  const tag = document.getElementById('emergencyTag');
+  if (currentProblem.emergency) tag.classList.remove('hidden');
+  else tag.classList.add('hidden');
+
+  document.getElementById('formScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+// =====================================================================
+// КОПИРОВАНИЕ
+// =====================================================================
+
+function copyText() {
+  const text = document.getElementById('generatedText').textContent;
+  const btn = document.getElementById('copyBtn');
+
+  function ok(){
+    btn.textContent = '✅ Скопировано';
+    btn.style.background = '#2e7d32';
+    setTimeout(function(){ btn.textContent = '📋 Копировать текст'; btn.style.background = '#4caf50'; }, 2000);
+  }
+  function fail(){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); }
+    catch(e) { alert('Не удалось скопировать — выделите текст вручную.'); }
+    document.body.removeChild(ta);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(fail);
+  } else {
+    fail();
+  }
+}
+
+// =====================================================================
+// ОТПРАВКА В GOOGLE-ТАБЛИЦУ
+// =====================================================================
+
+const reqInput = document.getElementById('requestNumber');
+reqInput.addEventListener('input', function(){
+  document.getElementById('sendBtn').disabled = !this.value.trim();
+});
+
+function sendToSheet() {
+  const reqNum = reqInput.value.trim();
+  if (!reqNum) return;
+
+  const btn = document.getElementById('sendBtn');
+  const status = document.getElementById('statusMsg');
+
+  const recipient = document.querySelector('input[name="recipient"]:checked');
+  const catKey = document.getElementById('category').value;
+  const catName = (CATEGORIES[catKey] ? CATEGORIES[catKey].name : '').replace(/^[^\wа-яё]+/i, '').trim() || '—';
+
+  const now = mskNow();
+  const dateStr = ruDate(now) + ', ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const flatVal = document.getElementById('flat').value.trim();
+  const floorVal = document.getElementById('floor').value.trim();
+
+  const payload = {
+    datetime: dateStr,
+    entrance: DEFAULT_ENTRANCE, // подъезд всегда "Подъезд 1"
+    flat: flatVal ? '№' + flatVal : '—',
+    floor: floorVal || '—',
+    category: catName,
+    problem: currentProblem ? currentProblem.name : '—',
+    recipient: RECIPIENT_NAMES[recipient.value],
+    requestNumber: reqNum,
+    address: ADDRESS
+  };
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Отправка...';
+  status.className = 'status-msg';
+  status.style.display = 'none';
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  })
+  .then(function(){
+    status.textContent = '✅ Сохранено в таблицу ✓';
+    status.className = 'status-msg ok';
+    reqInput.value = '';
+    btn.textContent = '✅ Отправлено';
+    setTimeout(function(){ btn.disabled = false; btn.textContent = '📤 Отправить в таблицу'; }, 3000);
+  })
+  .catch(function(err){
+    status.textContent = '❌ Ошибка сети. Проверьте интернет и доступность скрипта.';
+    status.className = 'status-msg err';
+    btn.disabled = false;
+    btn.textContent = '📤 Отправить в таблицу';
+  });
+}
+
+// =====================================================================
+// НАВИГАЦИЯ
+// =====================================================================
+
+function goBack() {
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('formScreen').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function showEmergency() {
+  const el = document.getElementById('emergencyCall');
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+initForm();
 </script>
 </body>
 </html>
