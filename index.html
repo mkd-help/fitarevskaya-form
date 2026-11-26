@@ -60,13 +60,10 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
 .footer{margin-top:20px;padding:16px;text-align:center;font-size:12px;color:#888;line-height:1.6}
 .footer a{color:#ff9800;text-decoration:none}
 .copyright{margin-top:10px;font-size:11px;color:#666}
-.btn-row{display:flex;gap:10px;margin-top:10px}
-.btn-row .btn{flex:1 1 0;min-width:0}
 @media(max-width:480px){
   body{padding:10px}
   .card,.result-card{padding:18px 14px;border-radius:14px}
   .emergency-buttons{grid-template-columns:1fr}
-  .btn-row{flex-direction:column}
 }
 </style>
 </head>
@@ -133,7 +130,6 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
       ⚠️ Сначала позвоните в Аварийную службу УК: <a href="tel:+74955395353">+7 (495) 539-53-53</a>. Заявка через форму — дополнительно, для фиксации инцидента.
     </div>
 
-    <!-- Поля места: квартира и этаж (подъезд зашит автоматически) -->
     <div id="locationFields" class="hidden">
       <div class="form-group" id="fieldFlat">
         <label class="form-label" id="labelFlat">№ квартиры <span class="opt">(1–168)</span></label>
@@ -204,12 +200,10 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWMqS_VJaYDn0ifE5xR7vkiABRME23Z86cRmNWcP0JuKUU1aJFydCuR-mniUYkZFzPdQ/exec';
 
 const UK_NAME = 'ГБУ «Жилищник района Коммунарка»';
-const UK_PHONE = '+7 (495) 539-53-53';
-const UK_PHONE_HREF = '+74955395353';
 const ADDRESS = 'г. Москва, ул. Фитаревская, д. 15, корп. 2';
 const TOTAL_FLOORS = 17;
 const TOTAL_FLATS = 168;
-const DEFAULT_ENTRANCE = 'Подъезд 1'; // Подъезд зашит — в доме только один
+const DEFAULT_ENTRANCE = 'Подъезд 1';
 
 const RECIPIENT_NAMES = {
   uk: 'ГБУ «Жилищник района Коммунарка»',
@@ -217,12 +211,15 @@ const RECIPIENT_NAMES = {
   uprava: 'Управа района Коммунарка г. Москвы'
 };
 
-// Флаги:
-//   needFlat / needFloor — показывать поля квартиры/этажа
-//   isBuildingWide — общедомовая проблема (не нужны квартира и этаж)
-//   isEntrance — проблема в подъезде/МОП (нужен этаж, подъезд зашит)
-//   isTerritory — проблема на придомовой территории (без полей места)
-//   emergency — аварийная проблема (особый шаблон + метка СРОЧНО + предупреждение)
+// Флаги проблем:
+//   needFlat — нужно поле квартиры (обязательное)
+//   needFloor — нужно поле этажа (обязательное, если нет needFlat; опциональное для некоторых)
+//   floorOptional — этаж опционален (не блокирует кнопку, но если указан — подставится в текст)
+//   isBuildingWide — общедомовая проблема (без полей места)
+//   isTerritory — придомовая территория (без полей места)
+//   emergency — аварийная проблема (метка СРОЧНО + предупреждение)
+//   isGarbageBlock — засор мусоропровода (особый шаблон текста)
+//   isCleaning — проблема уборки (применяется правило «1–2 этажа»)
 
 const CATEGORIES = {
   water: {
@@ -230,17 +227,17 @@ const CATEGORIES = {
     problems: [
       {id:'gvs_leak', name:'Протечка ГВС (труба, кран, стояк)', needFlat:true, needFloor:true, emergency:false},
       {id:'hvs_leak', name:'Протечка ХВС (труба, кран, стояк)', needFlat:true, needFloor:true, emergency:false},
-      {id:'pipe_burst', name:'Прорыв трубы ГВС/ХВС (фонтан, сильная течь)', isBuildingWide:true, emergency:true},
-      {id:'no_gvs', name:'Отсутствие ГВС (нет горячей воды)', isBuildingWide:true, emergency:true},
-      {id:'no_hvs', name:'Отсутствие ХВС (нет холодной воды)', isBuildingWide:true, emergency:true},
-      {id:'sewage_block', name:'Засор канализации (стояк, обратный поток)', needFlat:true, needFloor:true, emergency:true},
+      {id:'pipe_burst', name:'Прорыв трубы ГВС/ХВС (фонтан, сильная течь)', needFlat:true, needFloor:true, emergency:true},
+      {id:'no_gvs', name:'Отсутствие ГВС (нет горячей воды)', needFlat:true, needFloor:true, emergency:true},
+      {id:'no_hvs', name:'Отсутствие ХВС (нет холодной воды)', needFlat:true, needFloor:true, emergency:true},
+      {id:'sewage_block', name:'Засор мусоропровода (забит ствол), запах в подъезде', needFloor:true, floorOptional:true, emergency:false, isGarbageBlock:true},
       {id:'towel_rail', name:'Протечка полотенцесушителя', needFlat:true, needFloor:true, emergency:false}
     ]
   },
   heating: {
     name: '🔥 Отопление',
     problems: [
-      {id:'no_heat', name:'Отсутствие отопления (стояк холодный)', isBuildingWide:true, emergency:true},
+      {id:'no_heat', name:'Отсутствие отопления (стояк холодный)', needFlat:true, needFloor:true, emergency:true},
       {id:'weak_heat', name:'Недостаточный нагрев радиаторов (слабое отопление)', needFlat:true, needFloor:true, emergency:false},
       {id:'heating_leak', name:'Протечка системы отопления (стояк, разводка, радиатор)', needFlat:true, needFloor:true, emergency:true},
       {id:'heat_noise', name:'Посторонний шум/гудение в трубах отопления', needFlat:true, needFloor:true, emergency:false},
@@ -251,11 +248,11 @@ const CATEGORIES = {
     name: '⚡ Электричество',
     problems: [
       {id:'no_power_flat', name:'Нет электричества в квартире', needFlat:true, needFloor:true, emergency:true},
-      {id:'no_power_common', name:'Нет электричества в местах общего пользования', isEntrance:true, emergency:true},
-      {id:'panel_smoke', name:'Искрение / запах гари в электрощите', isEntrance:true, emergency:true},
-      {id:'entrance_light', name:'Не работает освещение в подъезде', isEntrance:true, emergency:false},
-      {id:'elevator', name:'Не работает лифт', isEntrance:true, emergency:true},
-      {id:'socket_common', name:'Неисправность розетки/освещения в МОП', isEntrance:true, emergency:false}
+      {id:'no_power_common', name:'Нет электричества в местах общего пользования', needFloor:true, emergency:true},
+      {id:'panel_smoke', name:'Искрение / запах гари в электрощите', needFloor:true, emergency:true},
+      {id:'entrance_light', name:'Не работает освещение в подъезде', needFloor:true, emergency:false},
+      {id:'elevator', name:'Не работает лифт', needFloor:true, emergency:true},
+      {id:'socket_common', name:'Неисправность розетки/освещения в МОП', needFloor:true, emergency:false}
     ]
   },
   structure: {
@@ -263,8 +260,8 @@ const CATEGORIES = {
     problems: [
       {id:'roof_leak', name:'Протечка кровли (мокрые стены/потолок)', needFlat:true, needFloor:true, emergency:true},
       {id:'crack', name:'Трещина несущей конструкции / обрушение', needFlat:true, needFloor:true, emergency:true},
-      {id:'facade_damage', name:'Повреждение фасада (отслоение, трещина, падение элементов)', isBuildingWide:true, emergency:true},
-      {id:'window_broken', name:'Разбитое окно в подъезде / МОП', isEntrance:true, needFloor:true, emergency:false},
+      {id:'facade_damage', name:'Повреждение фасада (отслоение, трещина, падение элементов)', needFloor:true, emergency:true},
+      {id:'window_broken', name:'Разбитое окно в подъезде / МОП', needFloor:true, emergency:false},
       {id:'balcony', name:'Проблема с балконом / лоджией (трещина, ограждение)', needFlat:true, needFloor:true, emergency:false},
       {id:'mold', name:'Плесень / грибок на стенах', needFlat:true, needFloor:true, emergency:false}
     ]
@@ -272,21 +269,20 @@ const CATEGORIES = {
   access: {
     name: '🚪 Двери, замки, домофон',
     problems: [
-      {id:'entrance_door', name:'Не закрывается входная дверь подъезда', isEntrance:true, emergency:false},
-      {id:'intercom', name:'Не работает домофон', isEntrance:true, emergency:false},
-      {id:'lock', name:'Неисправность замка / доводчика двери', isEntrance:true, emergency:false},
-      {id:'mailbox', name:'Поломка почтового ящика', needFlat:true, needFloor:true, emergency:false},
-      {id:'parking_gate', name:'Неисправность шлагбаума / ворот паркинга', isBuildingWide:true, emergency:false}
+      {id:'entrance_door', name:'Не закрывается входная дверь подъезда', emergency:false},
+      {id:'intercom', name:'Не работает домофон', emergency:false},
+      {id:'lock', name:'Неисправность замка / доводчика двери', needFloor:true, emergency:false},
+      {id:'mailbox', name:'Поломка почтового ящика', emergency:false}
+      // parking_gate удалён по запросу
     ]
   },
   cleaning: {
     name: '🧹 Уборка и содержание',
     problems: [
-      {id:'dirty_entrance', name:'Грязь в подъезде', isEntrance:true, needFloor:true, emergency:false},
-      {id:'dirty_common', name:'Грязь на лестничной площадке / лифте', isEntrance:true, needFloor:true, emergency:false},
+      {id:'dirty_entrance', name:'Грязь в подъезде', needFloor:true, floorOptional:true, emergency:false, isCleaning:true},
+      {id:'dirty_common', name:'Грязь на лестничной площадке / лифте', needFloor:true, floorOptional:true, emergency:false, isCleaning:true},
       {id:'garbage', name:'Переполнение контейнеров для мусора', isTerritory:true, emergency:false},
-      {id:'cockroaches', name:'Насекомые / грызуны в местах общего пользования', isEntrance:true, emergency:false},
-      {id:'snow', name:'Не убран снег / наледь (двор, вход, пандус)', isTerritory:true, emergency:false}
+      {id:'cockroaches', name:'Насекомые / грызуны в местах общего пользования', needFloor:true, emergency:false}
     ]
   },
   territory: {
@@ -298,8 +294,15 @@ const CATEGORIES = {
       {id:'flood_yard', name:'Подтопление придомовой территории', isTerritory:true, emergency:true},
       {id:'bench', name:'Поломка скамеек / МАФ', isTerritory:true, emergency:false}
     ]
+  },
+  other: {
+    name: '📄 Другое',
+    problems: [
+      {id:'noise', name:'Шум (соседи / оборудование дома)', needFlat:true, needFloor:true, emergency:false},
+      {id:'constr_defect', name:'Строительный дефект (отслоение, вздутие, перекос)', needFlat:true, needFloor:true, emergency:false},
+      {id:'other_problem', name:'Другое (опишите в поле «детали»)', needFlat:true, needFloor:true, emergency:false}
+    ]
   }
-  // Категории "Подземный паркинг" и "Другое" удалены по запросу
 };
 
 // =====================================================================
@@ -316,7 +319,6 @@ function initForm() {
     o.textContent = CATEGORIES[k].name;
     catSel.appendChild(o);
   });
-  // Поля квартиры и этажа всегда есть в DOM, просто скрываются/показываются
 }
 
 document.getElementById('category').addEventListener('change', function(){
@@ -366,7 +368,6 @@ document.querySelectorAll('input[name="recipient"]').forEach(function(r){
 function updateUI() {
   const recipient = document.querySelector('input[name="recipient"]:checked');
 
-  // поля жалобы (ГЖИ / Управа)
   const complaint = document.getElementById('complaintFields');
   if (recipient && (recipient.value === 'gzhi' || recipient.value === 'uprava')) {
     complaint.classList.remove('hidden');
@@ -374,36 +375,48 @@ function updateUI() {
     complaint.classList.add('hidden');
   }
 
-  // предупреждение аварийной службы
   const warn = document.getElementById('emergencyWarning');
   if (currentProblem && currentProblem.emergency) warn.classList.add('show');
   else warn.classList.remove('show');
 
-  // поля места
   const locBox = document.getElementById('locationFields');
   const ff = document.getElementById('fieldFlat');
   const fl = document.getElementById('fieldFloor');
 
   if (!currentProblem) { locBox.classList.add('hidden'); validateForm(); return; }
 
-  // Определяем, какие поля показывать
-  const showFlat = currentProblem.needFlat === true;
-  const showFloor = currentProblem.needFloor === true || currentProblem.needFlat === true;
-
+  // Общедомовые / придомовые — без полей
   if (currentProblem.isBuildingWide || currentProblem.isTerritory) {
-    // Общедомовая или дворовая проблема — поля места не нужны
     locBox.classList.add('hidden');
-  } else if (currentProblem.isEntrance) {
-    // Проблема в подъезде — нужен только этаж (подъезд зашит)
-    locBox.classList.remove('hidden');
-    ff.classList.add('hidden');
-    if (currentProblem.needFloor) fl.classList.remove('hidden');
-    else fl.classList.add('hidden');
+    validateForm();
+    return;
+  }
+
+  // Определяем видимость полей
+  const showFlat = currentProblem.needFlat === true;
+  const showFloor = currentProblem.needFloor === true;
+
+  if (!showFlat && !showFloor) {
+    locBox.classList.add('hidden');
+    validateForm();
+    return;
+  }
+
+  locBox.classList.remove('hidden');
+
+  if (showFlat) {
+    ff.classList.remove('hidden');
+    document.getElementById('labelFlat').innerHTML = '<span class="req">*</span> № квартиры <span class="opt">(1–168)</span>';
   } else {
-    // Квартирная проблема — нужны и квартира, и этаж
-    locBox.classList.remove('hidden');
-    if (showFlat) ff.classList.remove('hidden'); else ff.classList.add('hidden');
-    if (showFloor) fl.classList.remove('hidden'); else fl.classList.add('hidden');
+    ff.classList.add('hidden');
+  }
+
+  if (showFloor) {
+    fl.classList.remove('hidden');
+    const optLabel = currentProblem.floorOptional ? '<span class="opt">(необязательно)</span>' : '<span class="opt">(1–17)</span>';
+    document.getElementById('labelFloor').innerHTML = (currentProblem.floorOptional ? '' : '<span class="req">*</span> ') + 'Этаж ' + optLabel;
+  } else {
+    fl.classList.add('hidden');
   }
 
   validateForm();
@@ -432,7 +445,7 @@ function validateForm() {
   }
   if (currentProblem) {
     if (currentProblem.needFlat && !validateNumberField('flat', 1, TOTAL_FLATS)) { btn.disabled = true; return; }
-    if (currentProblem.needFloor && !validateNumberField('floor', 1, TOTAL_FLOORS)) { btn.disabled = true; return; }
+    if (currentProblem.needFloor && !currentProblem.floorOptional && !validateNumberField('floor', 1, TOTAL_FLOORS)) { btn.disabled = true; return; }
   }
   btn.disabled = false;
 }
@@ -456,24 +469,33 @@ function mskNow() {
 }
 
 // =====================================================================
-// ФРАГМЕНТ МЕСТА (подъезд зашит как DEFAULT_ENTRANCE)
+// ФРАГМЕНТ МЕСТА
 // =====================================================================
 
-function buildLocation(flat, floor, probId) {
-  const isCleaning = probId === 'dirty_entrance' || probId === 'dirty_common';
+function buildLocation(flat, floor) {
+  // Специальное правило для уборки: 1–2 этажа
+  const isCleaning = currentProblem && currentProblem.isCleaning;
+  const isGarbage = currentProblem && currentProblem.isGarbageBlock;
 
+  // Придомовая территория
   if (currentProblem && currentProblem.isTerritory) return 'на придомовой территории';
 
+  // Квартирная проблема
   if (flat && floor) return 'в квартире №' + flat + ', ' + floor + ' этаж, ' + DEFAULT_ENTRANCE;
   if (flat) return 'в квартире №' + flat + ', ' + DEFAULT_ENTRANCE;
 
+  // Только этаж (подъездные проблемы: освещение, лифт, электрощит, замок, насекомые, мусоропровод)
   if (floor) {
-    if (isCleaning && parseInt(floor,10) <= 2) return 'в ' + DEFAULT_ENTRANCE + ', на 1–2 этажах';
-    return 'в ' + DEFAULT_ENTRANCE + ', на ' + floor + ' этаже';
+    // Для уборки — правило 1–2 этажа
+    if (isCleaning && parseInt(floor,10) <= 2) {
+      return 'на 1–2 этажах ' + DEFAULT_ENTRANCE.toLowerCase();
+    }
+    // Для мусоропровода — правило 1–2 этажа НЕ применяется
+    return 'на ' + floor + ' этаже ' + DEFAULT_ENTRANCE.toLowerCase();
   }
 
-  // Только подъезд (без этажа) — для проблем типа "не закрывается дверь"
-  return 'в ' + DEFAULT_ENTRANCE;
+  // Только подъезд (дверь, домофон — без этажа)
+  return DEFAULT_ENTRANCE.toLowerCase();
 }
 
 // =====================================================================
@@ -506,7 +528,7 @@ function generateText() {
   }
   if (currentProblem) {
     if (currentProblem.needFlat && !validateNumberField('flat', 1, TOTAL_FLATS)) { markError('flat','errFlat'); valid = false; }
-    if (currentProblem.needFloor && !validateNumberField('floor', 1, TOTAL_FLOORS)) { markError('floor','errFloor'); valid = false; }
+    if (currentProblem.needFloor && !currentProblem.floorOptional && !validateNumberField('floor', 1, TOTAL_FLOORS)) { markError('floor','errFloor'); valid = false; }
   }
   if (!valid) return;
 
@@ -517,14 +539,36 @@ function generateText() {
   const details = document.getElementById('details').value.trim();
   const today = ruDate(mskNow());
   const name = currentProblem.name;
-  const loc = buildLocation(flat, floor, currentProblem ? currentProblem.id : '');
+  const loc = buildLocation(flat, floor);
   const detailsBlock = details ? '\n\nДополнительно: ' + details : '';
 
   let text = '';
 
-  if (recipient.value === 'uk') {
+  // ===== ШАБЛОН ДЛЯ ЗАСОРА МУСОРОПРОВОДА =====
+  if (currentProblem.isGarbageBlock) {
+    if (recipient.value === 'uk') {
+      if (floor) {
+        text = 'Здравствуйте! На ' + floor + ' этаже ' + DEFAULT_ENTRANCE.toLowerCase() + ' (' + ADDRESS + ') засор мусоропровода — ствол забит, в подъезде стоит стойкий запах мусора.'
+          + '\n\nПрошу срочно организовать прочистку ствола мусоропровода и проветривание/дезинфекцию подъезда.'
+          + '\n\nДата обращения: ' + today;
+      } else {
+        text = 'Здравствуйте! В ' + DEFAULT_ENTRANCE + ' (' + ADDRESS + ') засор мусоропровода — ствол забит, в подъезде стоит стойкий запах мусора.'
+          + '\n\nПрошу срочно организовать прочистку ствола мусоропровода и проветривание/дезинфекцию подъезда.'
+          + '\n\nДата обращения: ' + today;
+      }
+    } else {
+      const ukDateRu = isoToRu(ukDate);
+      const floorPart = floor ? ('На ' + floor + ' этаже ' + DEFAULT_ENTRANCE.toLowerCase() + ' ') : ('В ' + DEFAULT_ENTRANCE + ' ');
+      text = 'Прошу провести проверку по факту бездействия управляющей организации ' + UK_NAME + '.'
+        + '\n\n' + floorPart + '(' + ADDRESS + ') ' + ukDateRu + ' была подана заявка №' + ukNumber + ' по проблеме: засор мусоропровода, стойкий запах в подъезде. Однако инцидент не устранён в установленный срок.'
+        + '\n\nПрошу провести проверку и выдать предписание об устранении нарушения.'
+        + '\n\nДата обращения: ' + today;
+    }
+  }
+  // ===== ОБЫЧНЫЕ ШАБЛОНЫ =====
+  else if (recipient.value === 'uk') {
     if (currentProblem.emergency) {
-      text = 'СРОЧНО! Аварийная ситуация ' + loc + ' — ' + ADDRESS + '.'
+      text = 'СРОЧНО! Аварийная ситуация' + (loc ? ' ' + loc : '') + ' — ' + ADDRESS + '.'
         + '\n\nПроблема: ' + name + '.'
         + detailsBlock
         + '\n\nПрошу незамедлительно направить аварийную бригаду: ситуация аварийная, есть риск затопления, повреждения имущества и угроза безопасности жильцов.'
@@ -542,9 +586,7 @@ function generateText() {
   } else {
     const ukDateRu = isoToRu(ukDate);
     text = 'Прошу провести проверку и принять меры в отношении бездействия ' + UK_NAME + '.'
-      + '\n\nВ ' + ADDRESS + (loc ? ' (' + loc + ')' : '') + ' имеет место проблема: ' + name + '.'
-      + detailsBlock
-      + '\n\n' + ukDateRu + ' в ' + UK_NAME + ' было направлено обращение № ' + ukNumber + '. На текущий момент нарушение не устранено, ответ по существу не получен.'
+      + '\n\nВ ' + ADDRESS + (loc ? ' (' + loc + ')' : '') + ' ' + ukDateRu + ' было направлено обращение № ' + ukNumber + ' по проблеме: ' + name + '. На текущий момент нарушение не устранено, ответ по существу не получен.'
       + (currentProblem.emergency ? '\n\nСитуация является аварийной, есть угроза безопасности жильцов и имуществу.' : '')
       + '\n\nПрошу ' + (currentProblem.emergency ? 'немедленно ' : '') + 'провести проверку, выдать предписание об устранении нарушения и привлечь виновных к ответственности. Ответ прошу направить в установленный законом срок.'
       + '\n\nДата обращения: ' + today;
@@ -626,7 +668,7 @@ function sendToSheet() {
 
   const payload = {
     datetime: dateStr,
-    entrance: DEFAULT_ENTRANCE, // подъезд всегда "Подъезд 1"
+    entrance: DEFAULT_ENTRANCE,
     flat: flatVal ? '№' + flatVal : '—',
     floor: floorVal || '—',
     category: catName,
