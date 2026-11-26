@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Для заявок//Фитаревская 15к2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#2a2420;color:#fff;min-height:100vh;padding:16px}
+.page-title{font-size:clamp(20px,5vw,28px);font-weight:700;margin-bottom:20px;text-align:center;padding:0 10px}
+.card{max-width:600px;margin:0 auto;background:#1e1a16;border-radius:16px;padding:30px 25px}
+.card-desc{font-size:15px;line-height:1.5;margin-bottom:25px;color:#e0dcd8}
+.form-group{margin-bottom:22px}
+.form-label{display:block;font-size:15px;font-weight:600;margin-bottom:10px;color:#fff}
+.form-label .req{color:#ff6b6b}
+select{width:100%;padding:12px 14px;background:#3a3530;border:1px solid #4a4540;border-radius:8px;color:#fff;font-size:16px;outline:none;-webkit-appearance:none;appearance:none}
+select:focus{border-color:#ff9800}
+select option{background:#3a3530;color:#fff}
+.radio-group{display:flex;flex-direction:column;gap:8px}
+.radio-option{display:flex;align-items:center;padding:14px 16px;background:#2a2420;border:1px solid #5a5550;border-radius:10px;cursor:pointer;transition:all .15s;font-size:15px;min-height:48px}
+.radio-option:active{background:#3a3028}
+.radio-option input{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:2px solid #888;border-radius:50%;margin-right:12px;position:relative;flex-shrink:0;cursor:pointer}
+.radio-option input:checked{border-color:#ff9800}
+.radio-option input:checked::after{content:'';position:absolute;top:3px;left:3px;width:10px;height:10px;background:#ff9800;border-radius:50%}
+.submit-btn{width:100%;padding:16px;background:#ff9800;color:#1a1410;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px;transition:background .15s;min-height:52px}
+.submit-btn:active{background:#e68a00}
+@media(max-width:480px){body{padding:10px}.card{padding:22px 16px;border-radius:14px}.card-desc{font-size:14px;margin-bottom:20px}.form-group{margin-bottom:18px}.radio-option{padding:12px 14px;font-size:14px}}
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Для заявок//Фитаревская 15к2</h1>
+
+<div class="card">
+  <p class="card-desc">Данная форма предназначена для формирования текста и сбора данных по проблемам дома Фитаревская 15к2</p>
+
+  <div class="form-group">
+    <label class="form-label"><span class="req">*</span> Укажите № квартиры</label>
+    <select id="apartment" required>
+      <option value="">— выберите —</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Какая у вас проблема?</label>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="problem" value="gvs"> Протечка ГВС</label>
+      <label class="radio-option"><input type="radio" name="problem" value="hvs"> Протечка ХВС</label>
+      <label class="radio-option"><input type="radio" name="problem" value="heating"> Проблема с отоплением</label>
+      <label class="radio-option"><input type="radio" name="problem" value="garbage"> Забит мусоропровод</label>
+      <label class="radio-option"><input type="radio" name="problem" value="cleaning"> Не проводилась уборка на этаже</label>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Куда планируется отправка</label>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="recipient" value="uk"> ГБУ «Жилищник района Коммунарка»</label>
+      <label class="radio-option"><input type="radio" name="recipient" value="gzhi"> Государственная жилищная инспекция города Москвы</label>
+      <label class="radio-option"><input type="radio" name="recipient" value="uprava"> Управа района Коммунарка города Москвы</label>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="goToResult()">СФОРМИРОВАТЬ</button>
+</div>
+
+<script>
+const sel = document.getElementById('apartment');
+for(let i=1;i<=167;i++){
+  const o=document.createElement('option');
+  o.value=i;o.textContent=i;
+  sel.appendChild(o);
+}
+
+function goToResult(){
+  const apt=document.getElementById('apartment').value;
+  const prob=document.querySelector('input[name="problem"]:checked');
+  const rec=document.querySelector('input[name="recipient"]:checked');
+
+  if(!apt){alert('Укажите номер квартиры');return}
+  if(!prob){alert('Выберите проблему');return}
+  if(!rec){alert('Выберите адресата');return}
+
+  const params=new URLSearchParams({apt,problem:prob.value,recipient:rec.value});
+  window.location.href='result.html?'+params.toString();
+}
+</script>
+</body>
+</html>
