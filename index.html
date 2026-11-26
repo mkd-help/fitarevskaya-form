@@ -70,7 +70,6 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
 <body>
 <div class="container">
 
-<!-- ==================== ЭКРАН 1: ФОРМА ==================== -->
 <div id="formScreen">
   <div class="header">
     <h1>🏠 Домовой журнал</h1>
@@ -152,7 +151,6 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
   </div>
 </div>
 
-<!-- ==================== ЭКРАН 2: РЕЗУЛЬТАТ ==================== -->
 <div id="resultScreen" class="hidden">
   <div class="header">
     <h1>Текст заявки</h1>
@@ -193,10 +191,6 @@ input.error,select.error{border-color:#ff6b6b;background:#3a2020}
 </div>
 
 <script>
-// =====================================================================
-// КОНФИГ — всё настраивается здесь
-// =====================================================================
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWMqS_VJaYDn0ifE5xR7vkiABRME23Z86cRmNWcP0JuKUU1aJFydCuR-mniUYkZFzPdQ/exec';
 
 const UK_NAME = 'ГБУ «Жилищник района Коммунарка»';
@@ -211,15 +205,14 @@ const RECIPIENT_NAMES = {
   uprava: 'Управа района Коммунарка г. Москвы'
 };
 
-// Флаги проблем:
-//   needFlat — нужно поле квартиры (обязательное)
-//   needFloor — нужно поле этажа (обязательное, если нет needFlat; опциональное для некоторых)
-//   floorOptional — этаж опционален (не блокирует кнопку, но если указан — подставится в текст)
+// Флаги:
+//   needFlat / needFloor — обязательные поля
+//   floorOptional — этаж опционален (показывается, но не блокирует кнопку)
 //   isBuildingWide — общедомовая проблема (без полей места)
-//   isTerritory — придомовая территория (без полей места)
-//   emergency — аварийная проблема (метка СРОЧНО + предупреждение)
-//   isGarbageBlock — засор мусоропровода (особый шаблон текста)
-//   isCleaning — проблема уборки (применяется правило «1–2 этажа»)
+//   isTerritory — придомовая территория
+//   emergency — аварийная проблема
+//   isGarbageBlock — засор мусоропровода (особый шаблон)
+//   isCleaning — проблема уборки (правило «1–2 этажа»)
 
 const CATEGORIES = {
   water: {
@@ -230,7 +223,6 @@ const CATEGORIES = {
       {id:'pipe_burst', name:'Прорыв трубы ГВС/ХВС (фонтан, сильная течь)', needFlat:true, needFloor:true, emergency:true},
       {id:'no_gvs', name:'Отсутствие ГВС (нет горячей воды)', needFlat:true, needFloor:true, emergency:true},
       {id:'no_hvs', name:'Отсутствие ХВС (нет холодной воды)', needFlat:true, needFloor:true, emergency:true},
-      {id:'sewage_block', name:'Засор мусоропровода (забит ствол), запах в подъезде', needFloor:true, floorOptional:true, emergency:false, isGarbageBlock:true},
       {id:'towel_rail', name:'Протечка полотенцесушителя', needFlat:true, needFloor:true, emergency:false}
     ]
   },
@@ -273,14 +265,14 @@ const CATEGORIES = {
       {id:'intercom', name:'Не работает домофон', emergency:false},
       {id:'lock', name:'Неисправность замка / доводчика двери', needFloor:true, emergency:false},
       {id:'mailbox', name:'Поломка почтового ящика', emergency:false}
-      // parking_gate удалён по запросу
     ]
   },
   cleaning: {
-    name: '🧹 Уборка и содержание',
+    name: '🧹 Уборка, мусоропровод и содержание',
     problems: [
       {id:'dirty_entrance', name:'Грязь в подъезде', needFloor:true, floorOptional:true, emergency:false, isCleaning:true},
       {id:'dirty_common', name:'Грязь на лестничной площадке / лифте', needFloor:true, floorOptional:true, emergency:false, isCleaning:true},
+      {id:'sewage_block', name:'Засор мусоропровода (забит ствол), запах в подъезде', needFloor:true, floorOptional:true, emergency:false, isGarbageBlock:true},
       {id:'garbage', name:'Переполнение контейнеров для мусора', isTerritory:true, emergency:false},
       {id:'cockroaches', name:'Насекомые / грызуны в местах общего пользования', needFloor:true, emergency:false}
     ]
@@ -294,20 +286,9 @@ const CATEGORIES = {
       {id:'flood_yard', name:'Подтопление придомовой территории', isTerritory:true, emergency:true},
       {id:'bench', name:'Поломка скамеек / МАФ', isTerritory:true, emergency:false}
     ]
-  },
-  other: {
-    name: '📄 Другое',
-    problems: [
-      {id:'noise', name:'Шум (соседи / оборудование дома)', needFlat:true, needFloor:true, emergency:false},
-      {id:'constr_defect', name:'Строительный дефект (отслоение, вздутие, перекос)', needFlat:true, needFloor:true, emergency:false},
-      {id:'other_problem', name:'Другое (опишите в поле «детали»)', needFlat:true, needFloor:true, emergency:false}
-    ]
   }
+  // Категория "Другое" удалена
 };
-
-// =====================================================================
-// ИНИЦИАЛИЗАЦИЯ
-// =====================================================================
 
 let currentProblem = null;
 
@@ -385,14 +366,12 @@ function updateUI() {
 
   if (!currentProblem) { locBox.classList.add('hidden'); validateForm(); return; }
 
-  // Общедомовые / придомовые — без полей
   if (currentProblem.isBuildingWide || currentProblem.isTerritory) {
     locBox.classList.add('hidden');
     validateForm();
     return;
   }
 
-  // Определяем видимость полей
   const showFlat = currentProblem.needFlat === true;
   const showFloor = currentProblem.needFloor === true;
 
@@ -450,10 +429,6 @@ function validateForm() {
   btn.disabled = false;
 }
 
-// =====================================================================
-// ФОРМАТ ДАТЫ (МСК)
-// =====================================================================
-
 function ruDate(d) {
   const dd = String(d.getDate()).padStart(2,'0');
   const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -468,39 +443,23 @@ function mskNow() {
   return new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
 }
 
-// =====================================================================
-// ФРАГМЕНТ МЕСТА
-// =====================================================================
-
 function buildLocation(flat, floor) {
-  // Специальное правило для уборки: 1–2 этажа
   const isCleaning = currentProblem && currentProblem.isCleaning;
-  const isGarbage = currentProblem && currentProblem.isGarbageBlock;
 
-  // Придомовая территория
   if (currentProblem && currentProblem.isTerritory) return 'на придомовой территории';
 
-  // Квартирная проблема
   if (flat && floor) return 'в квартире №' + flat + ', ' + floor + ' этаж, ' + DEFAULT_ENTRANCE;
   if (flat) return 'в квартире №' + flat + ', ' + DEFAULT_ENTRANCE;
 
-  // Только этаж (подъездные проблемы: освещение, лифт, электрощит, замок, насекомые, мусоропровод)
   if (floor) {
-    // Для уборки — правило 1–2 этажа
     if (isCleaning && parseInt(floor,10) <= 2) {
       return 'на 1–2 этажах ' + DEFAULT_ENTRANCE.toLowerCase();
     }
-    // Для мусоропровода — правило 1–2 этажа НЕ применяется
     return 'на ' + floor + ' этаже ' + DEFAULT_ENTRANCE.toLowerCase();
   }
 
-  // Только подъезд (дверь, домофон — без этажа)
   return DEFAULT_ENTRANCE.toLowerCase();
 }
-
-// =====================================================================
-// ГЕНЕРАЦИЯ ТЕКСТА
-// =====================================================================
 
 function markError(elId, errId) {
   const el = document.getElementById(elId);
@@ -611,10 +570,6 @@ function generateText() {
   window.scrollTo(0, 0);
 }
 
-// =====================================================================
-// КОПИРОВАНИЕ
-// =====================================================================
-
 function copyText() {
   const text = document.getElementById('generatedText').textContent;
   const btn = document.getElementById('copyBtn');
@@ -639,10 +594,6 @@ function copyText() {
     fail();
   }
 }
-
-// =====================================================================
-// ОТПРАВКА В GOOGLE-ТАБЛИЦУ
-// =====================================================================
 
 const reqInput = document.getElementById('requestNumber');
 reqInput.addEventListener('input', function(){
@@ -703,10 +654,6 @@ function sendToSheet() {
     btn.textContent = '📤 Отправить в таблицу';
   });
 }
-
-// =====================================================================
-// НАВИГАЦИЯ
-// =====================================================================
 
 function goBack() {
   document.getElementById('resultScreen').classList.add('hidden');
